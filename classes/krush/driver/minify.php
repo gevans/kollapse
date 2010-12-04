@@ -1,20 +1,17 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 /**
- * Assets controller.
- *
- * Packages and compresses requested groups on-the-fly and returns output.
+ * CSSMin & JSMin driver for Krush.
  * @package    Krush
- * @category   Controller
+ * @category   Driver
  * @author     Gabriel Evans <gabriel@codeconcoction.com>
  * @copyright  (c) 2010 Gabriel Evans
  * @license    http://www.opensource.org/licenses/mit-license.php MIT license
  */
-class Controller_Krush_Assets extends Controller
+class Krush_Driver_Minify extends Krush
 {
 
-	public function action_index()
-	{
+	protected static function compress_scripts {}
 
-	}
+	protected static function compress_styles {}
 
 }

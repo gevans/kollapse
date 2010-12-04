@@ -26,67 +26,8 @@ As usual, enable the module in your application's `bootstrap.php`:
 
 ## Configuration
 
-Create `application/config/assets.php` or copy the example from the module's config directory.
-In this file, you can configure which assets should be combined and name their groups:
-
-    <?php
-    // application/config/assets.php
-
-    return array
-    (
-        /*
-         * Options:
-         * on     - Packages assets in every environment but development.
-         * off    - Never packages.
-         * always - Assets are always packaged.
-         * Default: on
-         */
-        'packaging'   => 'on',
-
-        /*
-         * Options:
-         * TRUE  - Compresses packages with YUI Compressor.
-         * FALSE - Disables compression (recommended for development).
-         * Default: off
-         */
-        'compression' => TRUE,
-
-        /*
-         * The URI paths where packages are cached and made available. Make sure you
-         * make this a directory where no other files are stored. Otherwise, you may
-         * overwrite something.
-         */
-        'package_path' => array(
-            'javascripts' => '/scripts/', // Ends up being http://localhost/scripts/
-            'stylesheets' => '/styles/',  // Ends up being http://localhost/styles/
-        ),
-
-        /*
-         * Specify groups of javascripts to be packaged.
-         */
-        'javascripts' => array(
-            'common' => array(
-                DOCROOT.'javascripts/jquery.js',
-                // Include all recursively, one level deep
-                DOCROOT.'javascripts/plugins/**/*.js',
-                DOCROOT.'javascripts/application.js',
-            ),
-        ),
-
-        /*
-         * Specify groups of stylesheets to be packaged.
-         */
-        'stylesheets' => array(
-            'common' => array(
-                DOCROOT.'stylesheets/reset.css',
-                DOCROOT.'stylesheets/widgets/*.css',
-                DOCROOT.'stylesheets/style.css',
-            ),
-            'workspace' => array(
-                DOCROOT.'stylesheets/workspace.css',
-            ),
-        ),
-    );
+Copy `config/krush.php` to your `application/config/` directory. You can then set
+groups of assets and tweak the configuration to your liking.
 
 ## Usage
 
