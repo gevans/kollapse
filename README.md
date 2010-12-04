@@ -2,7 +2,7 @@
 
 Krush is an asset packaging module for Kohana 3, inspired by
 [Jammit](https://github.com/documentcloud/jammit/ "documentcloud's Jammit"), that can
-compress and concatenate groups of Javascript and CSS files on-the-fly, or ahead of time.
+combine and compress groups of Javascript and CSS files on-the-fly, or ahead of time.
 
 ## Installation
 
