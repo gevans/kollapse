@@ -1,3 +1,3 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 
-class Controller_Krush extends Kohana_Controller_Krush {}
+abstract class Krush_Filter extends Kohana_Krush_Filter {}

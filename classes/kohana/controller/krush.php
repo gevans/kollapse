@@ -1,17 +1,20 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 /**
- * CSSMin & JSMin driver for Krush.
+ * Krush controller.
+ *
+ * Provides command-line packaging of assets.
  * @package    Krush
- * @category   Driver
+ * @category   Controller
  * @author     Gabriel Evans <gabriel@codeconcoction.com>
  * @copyright  (c) 2010 Gabriel Evans
  * @license    http://www.opensource.org/licenses/mit-license.php MIT license
  */
-class Krush_Driver_Minify extends Krush
+class Kohana_Controller_Krush extends Controller
 {
 
-	protected static function compress_scripts {}
+	public function action_index()
+	{
 
-	protected static function compress_styles {}
+	}
 
 }
