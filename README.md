@@ -7,7 +7,7 @@ combine and compress groups of Javascript and CSS files on-the-fly, or ahead of 
 ## Features
 
  * Caching & compression of Javascript and CSS assets,
- * Filters for parsing assets (LESS, SASS) before they're compressed,
+ * Filters for parsing assets ([LESS](http://lesscss.org/) & [SASS](http://sass-lang.com/)) before they're compressed,
  * Multiple compression drivers (Minify, [Google Closure](http://code.google.com/closure/compiler/), or [YUI Compressor](http://developer.yahoo.com/yui/compressor/)),
  * and the extensiblity of Kohana we all know and love.
 
