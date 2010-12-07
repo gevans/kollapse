@@ -4,6 +4,13 @@ Krush is an asset packaging module for Kohana 3, inspired by
 [Jammit](https://github.com/documentcloud/jammit/ "documentcloud's Jammit"), that can
 combine and compress groups of Javascript and CSS files on-the-fly, or ahead of time.
 
+## Features
+
+ * Caching & compression of Javascript and CSS assets,
+ * Filters for parsing assets (LESS, SASS) before they're compressed,
+ * Multiple compression drivers (Minify, [Google Closure](http://code.google.com/closure/compiler/), or [YUI Compressor](http://developer.yahoo.com/yui/compressor/)),
+ * and the extensiblity of Kohana we all know and love.
+
 ## Installation
 
 Clone the Git repository into your modules directory:
@@ -48,7 +55,7 @@ the latest copy of your packaged assets when they're updated:
 
     <link href="/styles/common.css?1291393143" media="screen" rel="stylesheet "type="text/css" />
 
-### Precaching & Packaging
+### Command-line Precaching & Packaging
 
 To immediately package and cache all of your assets, you can use the command-line to
 call Krush:
@@ -56,7 +63,7 @@ call Krush:
     $ php /path/to/index.php --uri=krush
 
 The above command will read your configured groups and save them all at your package
-path.
+paths.
 
 ## Further Reading
 
