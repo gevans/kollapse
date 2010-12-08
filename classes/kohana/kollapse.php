@@ -3,12 +3,12 @@
  * Handles asset packaging of scripts and stylesheets. Also provides helper functions
  * for including assets in views.
  *
- * @package    Krush
+ * @package    Kollapse
  * @author     Gabriel Evans <gabriel@codeconcoction.com>
  * @copyright  (c) 2010 Gabriel Evans
  * @license    http://www.opensource.org/licenses/mit-license.php MIT license
  */
-abstract class Kohana_Krush
+abstract class Kohana_Kollapse
 {
 
 	// configuration
@@ -28,7 +28,7 @@ abstract class Kohana_Krush
 	{
 		if ($config === NULL)
 		{
-			$config = Kohana::config('krush');
+			$config = Kohana::config('kollapse');
 		}
 
 		$config = array_merge(array(
@@ -63,13 +63,13 @@ abstract class Kohana_Krush
 		{
 			foreach ($config['filters'] as $filter)
 			{
-				$filter = 'Krush_Filter_'.$filter;
+				$filter = 'Kollapse_Filter_'.$filter;
 				// instantiate filter
 				self::$filters[$filter] = new $filter;
 			}
 		}
 
-		$driver = 'Krush_'.$config['driver'];
+		$driver = 'Kollapse_'.$config['driver'];
 		// instantiate driver
 		self::$driver = new $driver($config);
 

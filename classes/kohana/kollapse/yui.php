@@ -27,7 +27,7 @@ class Kohana_Krush_YUI extends Krush {
 	{
 		parent::__construct($config);
 
-		if ( ! $bin = Kohana::find_file())
+		if ( ! $bin = Kohana::find_file('vendor', 'yuicompressor-'.self::YUI_VERSION, 'jar'))
 		{
 			throw new Kohana_Exception('YUI Compressor :version not found',
 				array(':version' => self::YUI_VERSION));
