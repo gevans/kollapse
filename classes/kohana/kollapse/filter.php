@@ -21,7 +21,7 @@ abstract class Kohana_Krush_Filter {
 	 *
 	 * @var  array  asset types handled
 	 */
-	abstract public $filterable = array();
+	public $filterable = array();
 
 	/**
 	 * Filter and return data.

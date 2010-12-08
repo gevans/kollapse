@@ -12,7 +12,34 @@
 class Kohana_Controller_Kollapse extends Controller
 {
 
+	/**
+	 * Instantiate Kollapse.
+	 */
+	public function before()
+	{
+		$kollapse = new Kollapse;
+	}
+
+	/**
+	 * Build and cache all configured asset groups.
+	 */
 	public function action_index()
+	{
+
+	}
+
+	/**
+	 * Return requested scripts.
+	 */
+	public function action_scripts()
+	{
+
+	}
+
+	/**
+	 * Return requested styles.
+	 */
+	public function action_styles()
 	{
 
 	}

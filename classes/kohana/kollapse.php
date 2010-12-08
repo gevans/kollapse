@@ -27,7 +27,7 @@ abstract class Kohana_Kollapse
 	 * Stores configuration locally and instantiates compression driver.
 	 * @return  void
 	 */
-	protected static function init(array $config = NULL)
+	protected static function init(array $config = NULL, $driver_instance = TRUE, $filter_instance = TRUE)
 	{
 		if ($config === NULL)
 		{
@@ -81,9 +81,16 @@ abstract class Kohana_Kollapse
 	/**
 	 * Stores configuration and makes class publicly uninstantiable.
 	 */
-	protected function __construct(array $config)
+	protected function __construct(array $config = NULL)
 	{
-		self::$config = $config;
+		if ($config === NULL)
+		{
+			self::__construct($config, FALSE, FALSE);
+		}
+		else
+		{
+			self::$config = $config;
+		}
 	}
 
 	/**

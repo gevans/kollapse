@@ -1,8 +1,8 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 /**
- * YUI Compressor driver for Krush.
+ * YUI Compressor driver for Kollapse.
  *
- * @package    Krush
+ * @package    Kollapse
  * @category   Driver
  * @author     Gabriel Evans <gabriel@codeconcoction.com>
  * @copyright  (c) 2010 Gabriel Evans
@@ -39,6 +39,11 @@ class Kohana_Kollapse_YUI extends Kollapse {
 		}
 
 		self::$bin = $bin;
+	}
+
+	protected function optimize($data, $package, $type)
+	{
+		return $data;
 	}
 
 }

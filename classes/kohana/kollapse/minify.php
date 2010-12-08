@@ -1,8 +1,8 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 /**
- * CSSMin & JSMin driver for Krush.
+ * CSSMin & JSMin driver for Kollapse.
  *
- * @package    Krush
+ * @package    Kollapse
  * @category   Driver
  * @author     Gabriel Evans <gabriel@codeconcoction.com>
  * @copyright  (c) 2010 Gabriel Evans
