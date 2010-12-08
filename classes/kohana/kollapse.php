@@ -152,7 +152,7 @@ abstract class Kohana_Kollapse
 
 					$asset = substr_replace($asset, '', 0, strlen(DOCROOT));
 
-					$packages .= HTML::style($asset.'?'.$asset_timestamp)."\n";
+					$packages .= HTML::script($asset.'?'.$asset_timestamp)."\n";
 				}
 			}
 		}
