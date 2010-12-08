@@ -8,7 +8,7 @@
  * @copyright  (c) 2010 Gabriel Evans
  * @license    http://www.opensource.org/licenses/mit-license.php MIT license
  */
-class Kohana_Krush_YUI extends Krush {
+class Kohana_Kollapse_YUI extends Kollapse {
 
 	/**
 	 * Version of YUI Compressor being used.

@@ -13,11 +13,11 @@ return array
 
     /**
      * Options:
-     * TRUE  - Compresses packages.
+     * TRUE  - Compresses packages with GZip.
      * FALSE - Disables compression (recommended for development).
-     * Default: off
+     * Default: FALSE
      */
-    'compression' => TRUE,
+    'gzip_compression' => FALSE,
 
     /**
      * Driver to use for compression:
@@ -28,12 +28,20 @@ return array
     'driver' => 'minify',
 
     /**
-     * Location in document root where packages are cached and made available. Make
-     * sure this is a directory where no other files are stored. (Relative to base URL.)
+     * Specify filter classes. These will allow you to use special language extensions
+     * and other templating languages for scripts and styles.
+     */
+    'filters' => array(
+    	// 'less',
+    	// 'sass',
+    ),
+
+    /**
+     * Locations in document root where packages are cached and made available.
      */
     'package_paths' => array(
-        'javascripts' => 'scripts/',
-        'stylesheets' => 'styles/',
+        'javascripts' => DOCROOT.'scripts/',
+        'stylesheets' => DOCROOT.'styles/',
     ),
 
     /**
@@ -41,9 +49,9 @@ return array
      */
     'javascripts' => array(
         // 'example' => array(
-        //     'javascripts/jquery.js',
-        //     'javascripts/plugins/**/*.js',
-        //     'javascripts/application/*.js',
+        //     DOCROOT.'javascripts/jquery.js',
+        //     DOCROOT.'javascripts/plugins/**/*.js',
+        //     DOCROOT.'javascripts/application/*.js',
         // ),
     ),
 
@@ -52,9 +60,9 @@ return array
      */
     'stylesheets' => array(
         // 'example' => array(
-        //     'stylesheets/reset.css',
-        //     'stylesheets/widgets/**/*.css',
-        //     'stylesheets/styles/*.css',
+        //     DOCROOT.'stylesheets/reset.css',
+        //     DOCROOT.'stylesheets/widgets/**/*.css',
+        //     DOCROOT.'stylesheets/styles/*.css',
         // ),
     ),
 );
