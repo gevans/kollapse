@@ -23,12 +23,14 @@ Clone the Git repository into your modules directory:
 
 As usual, enable the module in your application's `bootstrap.php`:
 
-    Kohana::modules(array(
-        // ...
-        'kollapse' => MODPATH.'kollapse', // Asset packaging
-        // ...
-    ));
-
+```php
+<?php
+Kohana::modules(array(
+    // ...
+    'kollapse' => MODPATH.'kollapse', // Asset packaging
+    // ...
+));
+```
 
 ## Configuration
 
@@ -41,18 +43,23 @@ groups of assets and tweak the configuration to your liking.
 
 To embed your scripts and styles, use the Kollapse helper in your views:
 
-    // Include the 'common' group
-    echo Kollapse::scripts('common');
+```php
+<?php
+// Include the 'common' group
+echo Kollapse::scripts('common');
 
-    // Specify multiple groups and attributes
-    echo Kollapse::styles(array('common', 'workspace'), array('media' => 'screen'));
+// Specify multiple groups and attributes
+echo Kollapse::styles(array('common', 'workspace'), array('media' => 'screen'));
+```
 
 This will create HTML tags to include the specified groups, as well as allowing you to
 assign specific attributes in the generated HTML. Timestamps are appended to the URL,
 allowing you to send expiration dates far in the future, while causing browsers to fetch
 the latest copy of your packaged assets when they're updated:
 
-    <link href="/styles/common.css?1291393143" media="screen" rel="stylesheet "type="text/css" />
+```html
+<link href="/styles/common.css?1291393143" media="screen" rel="stylesheet "type="text/css" />
+```
 
 ### Command-line Precaching & Packaging
 
