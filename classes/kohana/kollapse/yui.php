@@ -32,9 +32,9 @@ class Kohana_Kollapse_YUI extends Kollapse {
 			throw new Kohana_Exception('YUI Compressor :version not found',
 				array(':version' => self::YUI_VERSION));
 		}
-		elseif (is_executable($bin))
+		elseif (!is_executable($bin))
 		{
-			throw new Kohana_Exeption("YUI Compressor at ':location' must be executable",
+			throw new Kohana_Exception("YUI Compressor at ':location' must be executable",
 				array(':location' => $bin));
 		}
 
