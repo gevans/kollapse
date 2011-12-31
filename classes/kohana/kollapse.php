@@ -31,7 +31,7 @@ abstract class Kohana_Kollapse
 	{
 		if ($config === NULL)
 		{
-			$config = (array) Kohana::config('kollapse');
+			$config = (array)Kohana::$config->load('kollapse');
 		}
 
 		$config = array_merge(array(
