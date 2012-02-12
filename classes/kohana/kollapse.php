@@ -1,352 +1,204 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 /**
- * Handles asset packaging of scripts and stylesheets. Also provides helper functions
- * for including assets in views.
+ * Kollapse uses Kohana's cascading filesystem to create
+ * an [asset pipeline](http://guides.rubyonrails.org/asset_pipeline.html) that
+ * concatenates, minififies, and compresses JavaScript and CSS assets with
+ * the ability to interpret other languages such as CoffeeScript and LESS.
  *
  * @package    Kollapse
  * @author     Gabriel Evans <gabriel@codeconcoction.com>
  * @copyright  (c) 2010 Gabriel Evans
- * @license    http://www.opensource.org/licenses/mit-license.php MIT license
+ * @license    http://www.opensource.org/licenses/mit-license.php  MIT license
  */
-abstract class Kohana_Kollapse
-{
-
-	// configuration
-	protected static $config = NULL;
-
-	// driver instance
-	protected static $driver;
-
-	// filter instances
-	protected static $filters = array();
-
-	// file timestamps
-	protected static $timestamps;
+class Kohana_Kollapse {
 
 	/**
-	 * Stores configuration locally and instantiates compression driver.
+	 * Has [Kollapse::init] been called?
+	 */
+	protected static $_init = FALSE;
+
+	/**
+	 * @var  array  Asset path cache, used when caching is true in [Kohana::init]
+	 */
+	protected static $_assets = array();
+
+	/**
+	 * @var  boolean  Has the file path cache changed during this execution?  Used internally when when caching is true in [Kohana::init]
+	 */
+	protected static $_assets_changed = FALSE;
+
+	/**
+	 * @var  array  Include paths that are used to find assets
+	 */
+	protected static $_asset_paths = array();
+
+	/**
+	 * @var  array  Configuration
+	 */
+	protected static $_config = NULL;
+
+	/**
+	 * Configuration accessor.
+	 *
+	 * @param   mixed  $path     Key path string (delimiter separated) or array of keys
+	 * @param   mixed  $default  Default value if the path is not set
+	 * @return  mixed
+	 */
+	public static function config($path, $default = NULL)
+	{
+		if ( ! Kollapse::$_init)
+		{
+			Kollapse::init();
+		}
+
+		return Arr::path(Kollapse::$_config, $path, $default);
+	}
+
+	/**
+	 * Stores configuration locally and initializes asset paths.
+	 *
 	 * @return  void
 	 */
-	protected static function init(array $config = NULL, $driver_instance = TRUE, $filter_instance = TRUE)
+	public static function init(array $config = NULL)
 	{
+		if (Kollapse::$_init)
+		{
+			// Do not allow execution twice
+			return;
+		}
+
+		// Kollapse is now initialized
+		Kollapse::$_init = TRUE;
+
 		if ($config === NULL)
 		{
-			$config = (array)Kohana::$config->load('kollapse');
+			$config = Kohana::$config->load('kollapse');
 		}
 
-		$config = array_merge(array(
-			'packaging' => (Kohana::$environment != 'development') ? TRUE : FALSE,
-			'gzip_compression' => FALSE,
-			'driver' => 'minify',
-		), $config);
+		// Store configuration
+		Kollapse::$_config = $config;
 
-		if ($config['packaging'] == 'off')
+		// Initialize asset paths
+		Kollapse::reset_paths();
+
+		if (Kohana::$caching === TRUE)
 		{
-			$config['packaging'] = FALSE;
-		}
-		elseif ($config['packaging'] == 'always')
-		{
-			$config['packaging'] = TRUE;
+			// Load the asset path cache
+			Kollapse::$_assets = Kohana::cache('Kollapse::find_asset()');
 		}
 
-		if ( ! isset($config['package_paths']['javascripts']))
-		{
-			throw new Kohana_Exception('Javascripts path not set');
-		}
-
-		if ( ! isset($config['package_paths']['stylesheets']))
-		{
-			throw new Kohana_Exception('Stylesheets path not set');
-		}
-
-		// save config
-		self::$config = $config;
-
-		if (isset($config['filters']))
-		{
-			foreach ($config['filters'] as $filter)
-			{
-				$filter = 'Kollapse_Filter_'.$filter;
-				// instantiate filter
-				self::$filters[$filter] = new $filter;
-			}
-		}
-
-		$driver = 'Kollapse_'.$config['driver'];
-		// instantiate driver
-		self::$driver = new $driver($config);
-
+		// Enable the Kollapse shutdown handler, which caches asset paths.
+		register_shutdown_function(array('Kollapse', 'shutdown_handler'));
 	}
 
 	/**
-	 * Stores configuration and makes class publicly uninstantiable.
+	 * Stores asset paths when caching is enabled.
+	 *
+	 * @return  void
 	 */
-	protected function __construct(array $config = NULL)
+	public static function shutdown_handler()
 	{
-		if ($config === NULL)
+		if ( ! Kollapse::$_init)
 		{
-			self::__construct($config, FALSE, FALSE);
+			// Do not execute when not active
+			return;
 		}
-		else
+
+		if (Kohana::$caching === TRUE AND Kollapse::$_assets_changed === TRUE)
 		{
-			self::$config = $config;
+			// Write the asset path cache
+			Kohana::cache('Kollapse::find_asset()', Kollapse::$_assets);
 		}
 	}
 
 	/**
-	 * Runs filters on provided data.
+	 * Adds the provided path to the start of the asset paths.
+	 *
+	 * @param   string  $path
+	 * @return  void
 	 */
-	protected static function filter($data, $type)
+	public static function prepend_path($path)
 	{
-		if ($type !== 'javascripts' AND $type !== 'stylesheets')
+		if ($valid = Kollapse::valid_asset_path($path))
 		{
-			throw new Kohana_Exception("Invalid filter type ':type'",
-				array(':type' => $type));
+			array_unshift(Kollapse::$_asset_paths, $valid);
 		}
-
-		foreach (self::$filters as $filter)
-		{
-			if (in_array($type, $filter->filterable))
-			{
-				$data = $filter->parse($data, $type);
-			}
-		}
-
-		return $data;
 	}
 
 	/**
-	 * Creates script package link.
-	 * @param   array|string  group(s) of assets to link
-	 * @param   array         additional attributes
-	 * @param   boolean       include file timestamp
-	 * @return  string
-	 * @uses    HTML::script
+	 * Adds the provided path to the end of the asset paths.
+	 *
+	 * @param   string  $path
+	 * @return  void
 	 */
-	public static function scripts($groups, array $attributes = NULL, $timestamp = TRUE)
+	public static function append_path($path)
 	{
-		if (self::$config === NULL)
+		if ($valid = Kollapse::valid_asset_path($path))
 		{
-			self::init();
+			array_push(Kollapse::$_asset_paths, $valid);
 		}
-
-		if ( ! is_array($groups))
-		{
-			$groups = array($groups);
-		}
-
-		$packages = '';
-
-		if ( ! self::$config['packaging'])
-		{
-			foreach ($groups as $group)
-			{
-				foreach (self::$config['javascripts'][$group] as $asset)
-				{
-					$asset_timestamp = '';
-
-					if ($timestamp)
-					{
-						$asset_timestamp = self::timestamp($asset);
-					}
-
-					$asset = substr_replace($asset, '', 0, strlen(DOCROOT));
-
-					$packages .= HTML::script($asset.'?'.$asset_timestamp)."\n";
-				}
-			}
-		}
-		else
-		{
-			foreach ($groups as $group)
-			{
-				$packages .= HTML::script(self::package($group, 'javascripts', $timestamp), $attributes)."\n";
-			}
-		}
-
-		return $packages;
 	}
 
 	/**
-	 * Creates stylesheet package link.
-	 * @param   array|string   asset group(s) to link
-	 * @param   array          additional attributes
-	 * @param   boolean        include file timestamp
-	 * @return  string
-	 * @uses    HTML::style
+	 * Checks if the provided path is an existing directory and normalizes it.
+	 *
+	 * @param   string   $path
+	 * @return  string   normalized path
+	 * @return  boolean  `FALSE` when non-existent
 	 */
-	public static function styles($groups, $attributes = array(), $timestamp = TRUE)
+	public static function valid_asset_path($path)
 	{
-		if (self::$config === NULL)
-		{
-			self::init();
-		}
-
-		if ( ! is_array($groups))
-		{
-			$groups = array($groups);
-		}
-
-		$packages = '';
-
-		if ( ! self::$config['packaging'])
-		{
-			foreach ($groups as $group)
-			{
-				foreach (self::$config['stylesheets'][$group] as $asset)
-				{
-					$asset_timestamp = '';
-
-					if ($timestamp)
-					{
-						$asset_timestamp = self::timestamp($asset);
-					}
-
-					$asset = substr_replace($asset, '', 0, strlen(DOCROOT));
-
-					$packages .= HTML::style($asset.'?'.$asset_timestamp)."\n";
-				}
-			}
-		}
-		else
-		{
-			foreach ($groups as $group)
-			{
-				$packages .= HTML::style(self::package($group, 'stylesheets', $timestamp), $attributes)."\n";
-			}
-		}
-
-		return $packages;
-	}
-
-	public static function package($group, $type, $timestamp = TRUE)
-	{
-		if ( ! isset(self::$config[$type][$group]))
-		{
-			throw new Kohana_Exception("Asset group ':group' does not exist",
-				array(':group' => $group));
-		}
-
-		$assets = self::$config[$type][$group];
-
-		switch ($type)
-		{
-			case 'javascripts':
-				$extension = '.js';
-			break;
-			case 'stylesheets':
-				$extension = '.css';
-			break;
-			default:
-				throw new Kohana_Exception("Invalid asset type ':type'",
-					array(':type' => $type));
-		}
-
-		$package = self::$config['package_paths'][$type].$group;
-		$package_url = substr_replace($package, '', 0, strlen(DOCROOT)).$extension;
-		$extension = (self::$config['gzip_compression']) ? $extension.'.gz' : $extension;
-		$package .= $extension;
-
-		if ( ! file_exists($package) OR (is_file($package) AND self::package_outdated($package, $assets)))
-		{
-			self::build_package($package, $assets, $type);
-		}
-
-		return ($timestamp) ? $package_url.'?'.self::timestamp($package) : $package_url;
+		return (is_dir($path)) ? realpath($path).DIRECTORY_SEPARATOR : FALSE;
 	}
 
 	/**
-	 * Rebuild an outdated or non-existent package.
+	 * Returns the currently registered asset paths.
+	 *
+	 * @return  array
 	 */
-	public static function build_package($package, array $assets, $type)
+	public static function asset_paths()
 	{
-		if ( ! file_exists($package))
-		{
-			if ( ! is_writable(dirname($package)))
-			{
-				throw new Kohana_Exception(":asset directory ':directory' must be writable",
-					array(':asset' => ucfirst($type), ':directory' => dirname($package)));
-			}
-		}
-		elseif ( ! is_writable($package))
-		{
-			throw new Kohana_Exception(":asset package ':package' must be writable",
-				array(':asset' => ucfirst($type), ':package' => $package));
-		}
-
-		$data = '';
-
-		foreach ($assets as $asset)
-		{
-			if ( ! is_file($asset))
-			{
-				throw new Kohana_Exception(":type asset ':file' does not exist",
-					array(':type' => ucfirst($type), ':file' => $asset));
-			}
-
-			$data .= file_get_contents($asset)."\n";
-		}
-
-		$data = self::filter($data, $type);
-
-		$data = self::$driver->optimize($data, $package, $type);
-
-		if (self::$config['gzip_compression'])
-		{
-			$data = gzencode($data);
-		}
-
-		file_put_contents($package, $data);
-	}
-
-	abstract protected function optimize($data, $package, $type);
-
-	/**
-	 * Check whether the specified package is outdated.
-	 */
-	public static function package_outdated($package, $assets)
-	{
-		$outdated = FALSE;
-		$latest = 0;
-
-		foreach ($assets as $asset)
-		{
-			$timestamp = self::timestamp($asset);
-
-			if ($timestamp > $latest)
-			{
-				// current asset is newest
-				$latest = $timestamp;
-			}
-		}
-
-		if ($latest > self::timestamp($package))
-		{
-			// package is outdated
-			$outdated = TRUE;
-		}
-
-		return $outdated;
+		return Kollapse::$_asset_paths;
 	}
 
 	/**
-	 * Get the last modified timestamp for a file.
+	 * Clears the currently registered asset paths.
+	 *
+	 * @return  void
 	 */
-	protected static function timestamp($file)
+	public static function clear_paths()
 	{
-		if ( ! isset(self::$timestamps[$file]))
-		{
-			if ( ! file_exists($file))
-			{
-				throw new Kohana_Exception("Asset ':file' does not exist",
-					array(':file' => $file));
-			}
-
-			// get & save timestamp
-			self::$timestamps[$file] = filemtime($file);
-		}
-
-		return self::$timestamps[$file];
+		Kollapse::$_asset_paths = array();
 	}
 
-}
+	/**
+	 * Clears the asset paths and adds paths for the application, system, and
+	 * each registered module.
+	 *
+	 * @return  void
+	 */
+	public static function reset_paths()
+	{
+		Kollapse::clear_paths();
+
+		foreach (Kohana::include_paths() as $path)
+		{
+			Kollapse::append_path($path.'assets/images');
+			Kollapse::append_path($path.'assets/javascripts');
+			Kollapse::append_path($path.'assets/stylesheets');
+		}
+	}
+
+} // End Kollapse
+
+// -- Engines ------------------------------------------------------------------
+
+// Kollapse::register_engine();
+
+// -- Preprocessors ------------------------------------------------------------
+
+// Kollapse::register_preprocessor();
+
+// -- Postprocessors -----------------------------------------------------------
+
+// Kollapse::register_postprocessor();

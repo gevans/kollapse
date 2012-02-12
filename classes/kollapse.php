@@ -1,3 +1,5 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 
-abstract class Kollapse extends Kohana_Kollapse {}
+class Kollapse extends Kohana_Kollapse {
+	// @see Kohana_Kollapse
+}
